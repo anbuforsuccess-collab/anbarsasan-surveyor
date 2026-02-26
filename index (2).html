@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANBARASAN FMB FINAL</title>
+
+<style>
+body{
+font-family:Arial;
+background:linear-gradient(to right,#1e3c72,#2a5298);
+color:white;
+text-align:center;
+padding:20px;
+}
+.box{
+background:white;
+color:black;
+padding:20px;
+border-radius:15px;
+max-width:520px;
+margin:auto;
+}
+input,select,button{
+width:95%;
+padding:8px;
+margin:5px 0;
+}
+button{
+background:#1e3c72;
+color:white;
+border:none;
+cursor:pointer;
+}
+table{
+width:100%;
+margin-top:15px;
+border-collapse:collapse;
+}
+th{
+background:#1e3c72;
+color:white;
+padding:6px;
+}
+td{
+padding:6px;
+border-bottom:1px solid #ccc;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>ANBARASAN FMB</h2>
+
+<input id="ab" placeholder="AB">
+<input id="bc" placeholder="BC">
+<input id="ca" placeholder="CA">
+<input id="ad" placeholder="AD">
+<input id="off" placeholder="Offset">
+
+<label>BC Turn from AB</label>
+<select id="turn">
+<option value="left">Left Turn</option>
+<option value="right">Right Turn</option>
+</select>
+
+<label>D1 from AB</label>
+<select id="side">
+<option value="left">Left</option>
+<option value="right">Right</option>
+</select>
+
+<button onclick="calculate()">Calculate</button>
+
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+<th>Direction</th>
+</tr>
+</thead>
+<tbody id="output"></tbody>
+</table>
+
+</div>
+
+<script>
+
+function perp(px,py,x1,y1,x2,y2){
+let dx=x2-x1;
+let dy=y2-y1;
+let L=Math.sqrt(dx*dx+dy*dy);
+let t=((px-x1)*dx+(py-y1)*dy)/(L*L);
+
+let fx=x1+t*dx;
+let fy=y1+t*dy;
+
+let cut=t*L;
+let off=Math.sqrt((px-fx)**2+(py-fy)**2);
+
+let cross=dx*(py-y1)-dy*(px-x1);
+let side=(cross>0)?"Left":"Right";
+
+return {cut:cut, off:off, side:side};
+}
+
+function calculate(){
+
+let AB=parseFloat(document.getElementById("ab").value);
+let BC=parseFloat(document.getElementById("bc").value);
+let CA=parseFloat(document.getElementById("ca").value);
+let AD=parseFloat(document.getElementById("ad").value);
+let OFF=parseFloat(document.getElementById("off").value);
+
+let turn=document.getElementById("turn").value;
+let side=document.getElementById("side").value;
+
+if(isNaN(AB)||isNaN(BC)||isNaN(CA)||isNaN(AD)||isNaN(OFF)){
+alert("Enter all values");
+return;
+}
+
+/* Coordinates */
+let Ax=0,Ay=0;
+let Bx=AB,By=0;
+
+/* Angle */
+let angle=Math.acos((AB*AB+BC*BC-CA*CA)/(2*AB*BC));
+if(turn=="right") angle=-angle;
+
+/* C coordinate */
+let Cx=Bx+BC*Math.cos(Math.PI-angle);
+let Cy=By+BC*Math.sin(Math.PI-angle);
+
+/* D1 coordinate */
+let Dx=AD;
+let Dy=(side=="left")?OFF:-OFF;
+
+/* Perpendicular results */
+let bc_res=perp(Dx,Dy,Bx,By,Cx,Cy);
+let ca_res=perp(Dx,Dy,Cx,Cy,Ax,Ay);
+
+/* Direct distances */
+let AD1=Math.sqrt((Dx-Ax)**2+(Dy-Ay)**2);
+let BD1=Math.sqrt((Dx-Bx)**2+(Dy-By)**2);
+let CD1=Math.sqrt((Dx-Cx)**2+(Dy-Cy)**2);
+
+/* Output */
+let result=`
+
+<tr><td>BE</td><td>${bc_res.cut.toFixed(3)}</td><td>-</td></tr>
+
+<tr><td>ED1</td><td>${bc_res.off.toFixed(3)}</td><td>${bc_res.side}</td></tr>
+
+<tr><td>CF</td><td>${ca_res.cut.toFixed(3)}</td><td>-</td></tr>
+
+<tr><td>FD1</td><td>${ca_res.off.toFixed(3)}</td><td>${ca_res.side}</td></tr>
+
+<tr><td>AD1</td><td>${AD1.toFixed(3)}</td><td>-</td></tr>
+
+<tr><td>BD1</td><td>${BD1.toFixed(3)}</td><td>-</td></tr>
+
+<tr><td>CD1</td><td>${CD1.toFixed(3)}</td><td>-</td></tr>
+
+`;
+
+document.getElementById("output").innerHTML=result;
+
+}
+
+</script>
+
+</body>
+</html>
